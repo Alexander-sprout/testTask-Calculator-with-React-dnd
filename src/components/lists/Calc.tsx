@@ -11,12 +11,14 @@ import { useAppSelector } from '../../store/store'
 
 
 export const Calc = () => {
-    const defaultList = useAppSelector(({ move }) => move.defaultList)
-    const uiList = useAppSelector(({ move }) => move.uiList)
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
+    const {
+        move: { defaultList, uiList },
+        toggle: { executeCalc }
+    } = useAppSelector(({ root }) => root)
+
     return (
         <Container>
-            {!isCalc ? (
+            {!executeCalc ? (
                 <>
                     {defaultList.map(({ id, type }) => (
                         <div key={type}>

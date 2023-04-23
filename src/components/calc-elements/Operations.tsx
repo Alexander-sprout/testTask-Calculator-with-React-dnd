@@ -1,29 +1,27 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { useAppSelector } from '../../store/store'
+import { useAppDispatch, useAppSelector } from '../../store/store'
 import { operationArr } from '../../interfaces'
-import { CalcComponentProps, isCalcProps } from '../../types'
-import { useMoveToUIList, useSortDrop } from '../../store/move/hooks'
-import { useEnteringOperations } from '../../store/calc/hooks/useEnteringOperations'
+import { CalcComponentProps } from '../../types'
+import { useSortDrop } from '../../hooks'
+import { addOperation } from '../../store'
 
 
 
 export const Operations = ({ id, type, isMoved }: CalcComponentProps) => {
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
+    const { toggle: { executeCalc } } = useAppSelector(({ root }) => root)
+    const dispatch = useAppDispatch()
     const { ref, item } = useSortDrop(id, type)
-    const { addOperation } = useEnteringOperations()
-    const { deleteElement } = useMoveToUIList()
     return (
         <Wrapper
-            onDoubleClick={() => deleteElement(type)}
             ref={isMoved ? null : ref}
-            isCalc={isCalc}
+            executeCalc={executeCalc}
             isDragging={item && item.type === type}>
-            {operationArr.map((item, index) => <OperationButton isCalc={isCalc} key={index}
+            {operationArr.map((item, index) => <OperationButton executeCalc={executeCalc} key={index}
                 onClick={() => {
-                    isCalc &&
-                        addOperation(item)
+                    executeCalc &&
+                        dispatch(addOperation(item))
                 }}
             >
                 {item}</OperationButton>)}
@@ -31,20 +29,25 @@ export const Operations = ({ id, type, isMoved }: CalcComponentProps) => {
     )
 }
 
-const Wrapper = styled.div<isCalcProps>`
+type ExecuteCalcProps = {
+    executeCalc: boolean,
+    isDragging?: boolean
+}
+
+const Wrapper = styled.div<ExecuteCalcProps>`
 display:flex;
 flex-direction:row;
 width: 240px;
 height:60px;
 &:hover{
-    ${({ isCalc }) => !isCalc && css`cursor:move`}
+    ${({ executeCalc }) => !executeCalc && css`cursor:move`}
 }
 ${({ isDragging }) => isDragging && css`
     opacity:0.3;
   `}
 `
 
-const OperationButton = styled.button<isCalcProps>`
+const OperationButton = styled.button<ExecuteCalcProps>`
     width:52px;
     height:48px;
     margin:auto;
@@ -55,7 +58,7 @@ const OperationButton = styled.button<isCalcProps>`
     border-radius:6px;
     font-size:14px;
     &:hover{
-        ${({ isCalc }) => isCalc
+        ${({ executeCalc }) => executeCalc
         ? css`cursor:pointer;
          border: 2px solid #5D5FEF;
         `

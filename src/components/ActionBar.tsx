@@ -5,21 +5,20 @@ import { GoCode } from 'react-icons/go'
 
 import { useAppDispatch, useAppSelector } from '../store/store'
 import { calculator, constructor } from '../store/toggle/toggleReducer'
-import { isCalcProps } from '../types'
 
 export const ActionBar = () => {
     const dispatch = useAppDispatch()
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
+    const { toggle: { executeCalc } } = useAppSelector(({ root }) => root)
     return (
         <Container>
-            <RunTimeButton isCalc={isCalc} onClick={() => dispatch(calculator())}>
-                <RunTime isCalc={isCalc}>
+            <RunTimeButton executeCalc={executeCalc} onClick={() => dispatch(calculator())}>
+                <RunTime executeCalc={executeCalc}>
                     <HiOutlineEye size={20} />
                 </RunTime>
                 Runtime
             </RunTimeButton>
-            <ConstructorButton isCalc={isCalc} onClick={() => dispatch(constructor())}>
-                <Constructor isCalc={isCalc}>
+            <ConstructorButton executeCalc={executeCalc} onClick={() => dispatch(constructor())}>
+                <Constructor executeCalc={executeCalc}>
                     <GoCode size={15} />
                 </Constructor>
                 Constructor
@@ -27,6 +26,10 @@ export const ActionBar = () => {
         </Container>
     )
 }
+type ExecuteCalcProps = {
+    executeCalc: boolean,
+}
+
 
 const Container = styled.div`
     display:flex;
@@ -38,8 +41,8 @@ const Container = styled.div`
     gap:1px;
 `
 
-const RunTimeButton = styled.button<isCalcProps>`
-    background-color: ${({ isCalc }) => isCalc ? '#ffffff' : '#F3F4F6'};
+const RunTimeButton = styled.button<ExecuteCalcProps>`
+    background-color: ${({ executeCalc }) => executeCalc ? '#ffffff' : '#F3F4F6'};
     display:flex;
     align-items:center;
     justify-content:center;
@@ -47,7 +50,7 @@ const RunTimeButton = styled.button<isCalcProps>`
     gap:7px;
     width:108px;
     border-radius:5px;
-    border:${({ isCalc }) => isCalc ? '1px solid #E2E3E5' : '0px'};
+    border:${({ executeCalc }) => executeCalc ? '1px solid #E2E3E5' : '0px'};
     font-family: 'Inter';
     font-weight: 500;
     font-size: 14px;
@@ -57,8 +60,8 @@ const RunTimeButton = styled.button<isCalcProps>`
     margin-left:1px;
 `
 
-const ConstructorButton = styled.button<isCalcProps>`
-    background-color: ${({ isCalc }) => isCalc ? '#F3F4F6' : '#ffffff'};
+const ConstructorButton = styled.button<ExecuteCalcProps>`
+    background-color: ${({ executeCalc }) => executeCalc ? '#F3F4F6' : '#ffffff'};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -66,7 +69,7 @@ const ConstructorButton = styled.button<isCalcProps>`
     gap: 7px;
     width: 133px;
     border-radius: 5px;
-    border:${({ isCalc }) => isCalc ? '0px' : '1px solid #E2E3E5'};
+    border:${({ executeCalc }) => executeCalc ? '0px' : '1px solid #E2E3E5'};
     font-family: 'Inter';
     font-weight: 500;
     font-size: 14px;
@@ -76,11 +79,11 @@ const ConstructorButton = styled.button<isCalcProps>`
     margin-right:1px;
 `
 
-const RunTime = styled.div<isCalcProps>`
-    color: ${({ isCalc }) => isCalc ? '#5D5FEF' : '#4D5562'};
+const RunTime = styled.div<ExecuteCalcProps>`
+    color: ${({ executeCalc }) => executeCalc ? '#5D5FEF' : '#4D5562'};
 `
-const Constructor = styled.div<isCalcProps>`
-    color: ${({ isCalc }) => isCalc ? '#4D5562' : '#5D5FEF'};
+const Constructor = styled.div<ExecuteCalcProps>`
+    color: ${({ executeCalc }) => executeCalc ? '#4D5562' : '#5D5FEF'};
 `
 
 

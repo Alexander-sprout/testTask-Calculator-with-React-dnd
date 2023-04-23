@@ -2,14 +2,11 @@ import React from 'react'
 import { useDrop } from 'react-dnd'
 import styled, { css } from 'styled-components'
 
-import { useDispatch } from 'react-redux'
-import { useAppSelector } from '../../store/store'
+import { useAppDispatch, useAppSelector } from '../../store/store'
 import { Display, EqualSign, Numbers, Operations } from '../../components/calc-elements'
 import Img from '../../assets/img.png'
-import { useSortDrop } from '../../store/move/hooks/useSortDrop'
-import { UiItem, isSelectedProps } from '../../types'
-import { useMoveToUIList } from '../../store/move/hooks/useMoveToUIList'
-
+import { UiItem } from '../../types'
+import { deleteElement, moveToUIList } from '../../store'
 
 
 export interface Item {
@@ -22,19 +19,22 @@ export interface ContainerState {
 }
 
 export const CalcExecute = () => {
-    const uiList = useAppSelector(({ move }) => move.uiList)
-    const isSelected = useAppSelector(({ move }) => move.focusDropElelement)
-    const { moveToUIList } = useMoveToUIList()
+    const { uiList, focusDropElelement, executeCalc } = useAppSelector(({ root }) => ({
+        uiList: root.move.uiList,
+        focusDropElelement: root.move.focusDropElelement,
+        executeCalc: root.toggle.executeCalc
+    }))
+
+    const dispatch = useAppDispatch()
     const [_, dropRef] = useDrop(
         () => ({
             accept: 'KEYBOARD',
-            drop: (item, monitor) => {
-                moveToUIList((item as UiItem))
+            drop: (item) => {
+                dispatch(moveToUIList((item as UiItem)))
             },
         }),
         [moveToUIList]
-    );
-    const { isDragging } = useSortDrop()
+    )
     return (
         <Wrapper ref={dropRef}>
             {!uiList.length
@@ -60,32 +60,32 @@ export const CalcExecute = () => {
                             <div key={type}>
                                 {type === 'result' &&
                                     <DisplayWrapper
-                                        isSelected={isSelected === type}
-                                        isDragging={isDragging}
+                                        onDoubleClick={() => dispatch(deleteElement({ type, executeCalc }))}
+                                        isSelected={focusDropElelement === type}
                                     >
                                         <Display id={id} type={type} />
                                     </DisplayWrapper>
                                 }
                                 {type === 'operations' &&
                                     <CalcElementWrapper
-                                        isSelected={isSelected === type}
-                                        isDragging={isDragging}
+                                        onDoubleClick={() => dispatch(deleteElement({ type, executeCalc }))}
+                                        isSelected={focusDropElelement === type}
                                     >
                                         <Operations id={id} type={type} />
                                     </CalcElementWrapper >
                                 }
                                 {type === 'numbers' &&
                                     <CalcElementWrapper
-                                        isSelected={isSelected === type}
-                                        isDragging={isDragging}
+                                        onDoubleClick={() => dispatch(deleteElement({ type, executeCalc }))}
+                                        isSelected={focusDropElelement === type}
                                     >
                                         <Numbers id={id} type={type} />
                                     </CalcElementWrapper>
                                 }
                                 {type === 'equal-sign' &&
                                     <CalcElementWrapper
-                                        isSelected={isSelected === type}
-                                        isDragging={isDragging}
+                                        onDoubleClick={() => dispatch(deleteElement({ type, executeCalc }))}
+                                        isSelected={focusDropElelement === type}
                                     >
                                         <EqualSign id={id} type={type} />
                                     </CalcElementWrapper>
@@ -139,16 +139,19 @@ const SecondText = styled.div`
     font-weight:400;
     font-size:12px;
 `
+type isSelectedProps = {
+    isSelected: boolean,
+}
 const DisplayWrapper = styled.div<isSelectedProps>`
- ${({ isSelected, isDragging }) => (isSelected && isDragging) && css`
+ ${({ isSelected }) => isSelected && css`
     border: 2px solid #ff0000;
-    border-radius:10px
+    border-radius:10px;
     `}
 
 `
 
 const CalcElementWrapper = styled.div<isSelectedProps>`
-${({ isSelected, isDragging }) => (isSelected && isDragging) && css`
+${({ isSelected }) => isSelected && css`
 display:flex;
 align-items:center;
 justify-content:center;

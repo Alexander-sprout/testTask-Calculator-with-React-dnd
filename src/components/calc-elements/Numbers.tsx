@@ -1,20 +1,19 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { useAppSelector } from '../../store/store'
+import { useAppDispatch, useAppSelector } from '../../store/store'
 import { NumbersArr } from '../../interfaces'
-import { CalcComponentProps, isCalcProps } from '../../types'
-import { useMoveToUIList, useSortDrop } from '../../store/move/hooks'
-import { useEnteringNumbers } from '../../store/calc/hooks'
+import { CalcComponentProps } from '../../types'
+import { useSortDrop } from '../../hooks'
+import { addNumber } from '../../store'
 
 
 export const Numbers = ({ id, type, isMoved }: CalcComponentProps) => {
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
-    const { addNumber } = useEnteringNumbers()
-    const { deleteElement } = useMoveToUIList()
+    const { toggle: { executeCalc } } = useAppSelector(({ root }) => root)
+    const dispatch = useAppDispatch()
     const addSimbol = (simb: string) => {
-        if (isCalc) {
-            addNumber(simb)
+        if (executeCalc) {
+            dispatch(addNumber(simb))
 
         }
     }
@@ -22,27 +21,31 @@ export const Numbers = ({ id, type, isMoved }: CalcComponentProps) => {
     const { ref, item } = useSortDrop(id, type)
     return (
         <Container
-            onDoubleClick={() => deleteElement(type)}
             ref={isMoved ? null : ref}
-            isCalc={isCalc}
+            executeCalc={executeCalc}
             isDragging={item && item.type === type}
         >
-            {NumbersArr.map((item, index) => <NumButton isCalc={isCalc} key={index}
+            {NumbersArr.map((item, index) => <NumButton executeCalc={executeCalc} key={index}
                 onClick={() => addSimbol(item)}
             >{item}</NumButton>)}
-            <NullButton isCalc={isCalc} onClick={() => addSimbol('0')}>0</NullButton>
-            <NumButton isCalc={isCalc} onClick={() => addSimbol('.')}>,</NumButton>
+            <NullButton executeCalc={executeCalc} onClick={() => addSimbol('0')}>0</NullButton>
+            <NumButton executeCalc={executeCalc} onClick={() => addSimbol('.')}>,</NumButton>
         </Container>
     )
 }
 
-const Container = styled.div<isCalcProps>`
+type ExecuteCalcProps = {
+    executeCalc: boolean,
+    isDragging?: boolean
+}
+
+const Container = styled.div<ExecuteCalcProps>`
 width:240px;
 height:224px;
 display:flex;
 flex-wrap: wrap;
 justify-content:flex-start;
-${({ isCalc }) => !isCalc && css`
+${({ executeCalc }) => !executeCalc && css`
     &:hover{
         cursor:move
     }
@@ -53,7 +56,7 @@ ${({ isCalc }) => !isCalc && css`
   `}
 `
 
-const NullButton = styled.button<isCalcProps>`
+const NullButton = styled.button<ExecuteCalcProps>`
      width:152px;
     height:48px;
     margin:auto;
@@ -63,15 +66,15 @@ const NullButton = styled.button<isCalcProps>`
     border: 1px solid #E2E3E5;
     border-radius:6px;
     font-size:14px;
-    ${({ isCalc }) =>
-        isCalc && css`
+    ${({ executeCalc }) =>
+        executeCalc && css`
         &:hover {
           cursor: pointer;
           border: 2px solid #5D5FEF;
         }
       `
     }
-    ${({ isCalc }) => !isCalc && css`
+    ${({ executeCalc }) => !executeCalc && css`
     &:hover{
         cursor:move
     }
@@ -79,7 +82,7 @@ const NullButton = styled.button<isCalcProps>`
     }
 `
 
-const NumButton = styled.button<isCalcProps>`
+const NumButton = styled.button<ExecuteCalcProps>`
     width:72px;
     height:48px;
     margin:auto;
@@ -89,15 +92,15 @@ const NumButton = styled.button<isCalcProps>`
     border: 1px solid #E2E3E5;
     border-radius:6px;
     font-size:14px;
-    ${({ isCalc }) =>
-        isCalc && css`
+    ${({ executeCalc }) =>
+        executeCalc && css`
         &:hover {
           cursor: pointer;
           border: 2px solid #5D5FEF;
         }
       `
     }
-    ${({ isCalc }) => !isCalc && css`
+    ${({ executeCalc }) => !executeCalc && css`
     &:hover{
         cursor:move
     }

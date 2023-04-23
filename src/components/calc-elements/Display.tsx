@@ -2,40 +2,45 @@ import React from 'react'
 import styled, { css } from 'styled-components'
 
 import { useAppSelector } from '../../store/store'
-import { CalcComponentProps, IsCalcAndInUiListProps, ViewResultProps, } from '../../types'
-import { useMoveToUIList, useSortDrop } from '../../store/move/hooks'
+import { CalcComponentProps } from '../../types'
+import { useSortDrop } from '../../hooks'
 
 export const Display = ({ id, type }: CalcComponentProps) => {
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
-    const uiList = useAppSelector(({ move }) => move.uiList)
-    const { ref, item } = useSortDrop(id, type)
-    const { deleteElement } = useMoveToUIList()
-    const resultFromRender = useAppSelector(({ calc }) => calc.resultForRender)
+    const { ref, item } = useSortDrop(id, type, true)
+    const {
+        toggle: { executeCalc },
+        move: { uiList },
+        calc: { resultForRender }
+    } = useAppSelector(({ root }) => root)
     return (
         <Wrapper
-            onDoubleClick={() => deleteElement(type)}
             ref={ref}
-            isCalc={isCalc}
-            isDragging={item && item.type === type}
+            executeCalc={executeCalc}
+            focusDropElelement={item && item.type === type}
             inUiList={uiList.some(item => item.type === type)}
         >
             <Container>
-                <ViewResult resultForRender={resultFromRender}>
-                    {resultFromRender}
+                <ViewResult resultForRender={resultForRender}>
+                    {resultForRender}
                 </ViewResult>
             </Container>
         </Wrapper>
     )
 }
-const Wrapper = styled.div<IsCalcAndInUiListProps>`
+type ExecuteCalcProps = {
+    executeCalc: boolean,
+    inUiList: boolean,
+    focusDropElelement: string
+}
+const Wrapper = styled.div<ExecuteCalcProps>`
 display:flex;
 justify-content:center;
 align-items:center;
     width:240px;
     height:60px;
     &:hover {
-    ${({ isCalc, inUiList }) => {
-        if (!isCalc && !inUiList) {
+    ${({ executeCalc, inUiList }) => {
+        if (!executeCalc && !inUiList) {
             return css`
           cursor: move;
         `;
@@ -47,7 +52,7 @@ align-items:center;
         }
     }}
   }
-  ${({ isDragging }) => isDragging && css`
+  ${({ focusDropElelement }) => focusDropElelement && css`
     opacity:0.3;
   `}
   `
@@ -61,16 +66,18 @@ align-items: center;
 border-radius: 6px;
 background: #F3F4F6;
 `
-
+type ViewResultProps = {
+    resultForRender: string
+}
 const ViewResult = styled.div<ViewResultProps>`
 font-family: 'inter';
 font-weight: 800;
 padding: 7px;
 font-size:${({ resultForRender }) => {
-        if (resultForRender.toString() === 'Не определено') {
+        if (resultForRender === 'Не определено') {
             return '24px';
         }
-        if (resultForRender.toString().length > 9) {
+        if (resultForRender.length > 9) {
             return '19px';
         }
         else {

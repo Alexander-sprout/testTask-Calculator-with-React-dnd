@@ -1,29 +1,31 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { CalcComponentProps, isCalcProps } from '../../types'
-import { useAppSelector } from '../../store/store'
-import { useGetCalcResult } from '../../store/calc/hooks'
-import { useMoveToUIList, useSortDrop } from '../../store/move/hooks'
+import { CalcComponentProps } from '../../types'
+import { useAppDispatch, useAppSelector } from '../../store/store'
+import { useSortDrop } from '../../hooks'
+import { getResult } from '../../store'
 
 
 export const EqualSign = ({ id, type, isMoved }: CalcComponentProps) => {
-    const isCalc = useAppSelector(({ toggle }) => toggle.executeCalc)
-    const { getResult } = useGetCalcResult()
-    const { deleteElement } = useMoveToUIList()
+    const { toggle: { executeCalc } } = useAppSelector(({ root }) => root)
+    const dispatch = useAppDispatch()
     const { ref, item } = useSortDrop(id, type)
     return (
         <Container
-            onDoubleClick={() => deleteElement(type)}
             ref={isMoved ? null : ref}
-            isCalc={isCalc}
+            executeCalc={executeCalc}
             isDragging={item && item.type === type}            >
-            <ResultButton isCalc={isCalc} onClick={() => isCalc && getResult()}>=</ResultButton>
+            <ResultButton executeCalc={executeCalc} onClick={() => executeCalc && dispatch(getResult())}>=</ResultButton>
         </Container>
     )
 }
 
-const ResultButton = styled.div<isCalcProps>`
+type ExecuteCalcProps = {
+    executeCalc: boolean,
+    isDragging?: boolean
+}
+const ResultButton = styled.div<ExecuteCalcProps>`
 display:flex;
 justify-content:center;
 align-items:center;
@@ -36,19 +38,19 @@ align-items:center;
     font-family:'inter';
     font-weight:500;
     &:hover{
-        ${({ isCalc }) => isCalc
+        ${({ executeCalc }) => executeCalc
         ? css`cursor:pointer`
         : css`cursor:mover`
     }
     }
     `
-const Container = styled.div<isCalcProps>`
+const Container = styled.div<ExecuteCalcProps>`
     width:240px;
     height:72px;
     display:flex;
     justify-content:center;
     align-items:center;
-    ${({ isCalc }) => !isCalc && css`
+    ${({ executeCalc }) => !executeCalc && css`
     &:hover{
         cursor:move
     }
